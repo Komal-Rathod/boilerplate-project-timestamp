@@ -24,20 +24,33 @@ app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
 app.get("/api/:date?/", function(req, res){
-  let {date} = req.params;
-    date = date? new Date(date): new Date();
-  
-  let utcDate = date.toString().replace(date.toString().split('GMT')[1],"");
-  utcDate = utcDate.split(" ");
-  utcDate[0]=utcDate[0]+",";
-  let temp = utcDate[1];
-  utcDate[1]=utcDate[2];
-  utcDate[2]=temp;
-  utcDate= utcDate.join(" ");
-  
-  res.json({"unix":Date.parse(date), "utc":utcDate});
-  
-  
+  const dateString = req.params.date;
+  let date;
+
+  // If no date is provided, use the current date
+  if (!dateString) {
+    date = new Date();
+  } else {
+    // Check if the date string is a Unix timestamp
+    const unixTimestamp = parseInt(dateString);
+    if (!isNaN(unixTimestamp)) {
+      date = new Date(unixTimestamp);
+    } else {
+      date = new Date(dateString);
+    }
+  }
+
+  // If the date is invalid, return an error message
+  if (isNaN(date.getTime())) {
+    return res.json({ error: "Invalid Date" });
+  }
+
+  // Otherwise, return the Unix timestamp and the UTC date string
+  const response = {
+    unix: date.getTime(),
+    utc: date.toUTCString()
+  };
+  res.json(response);
   
 }); 
 
