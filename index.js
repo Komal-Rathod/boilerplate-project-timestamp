@@ -36,7 +36,7 @@ app.get("/api/:date?/", function(req, res){
     if (!isNaN(unixTimestamp)) {
       date = new Date(unixTimestamp);
     } else {
-      date = new Date(Date.parse(dateString));
+      date = new Date(dateString);
     }
   }
 
@@ -47,7 +47,7 @@ app.get("/api/:date?/", function(req, res){
 
   // Otherwise, return the Unix timestamp and the UTC date string
   const response = {
-    unix: date.getTime(),
+    unix:parseInt(dateString),
     utc: date.toUTCString()
   };
   res.json(response);
