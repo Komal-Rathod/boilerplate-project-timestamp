@@ -23,10 +23,23 @@ app.get("/", function (req, res) {
 app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
-app.get("/api/:datevalue",function(req,res){
-  res.json({"unix":1451001600000,"utc":new Date(req.params.datevalue)});
-})
-
+app.get("/api/:date?/", function(req, res){
+  let {date} = req.params;
+    date = date? new Date(date): new Date();
+  
+  let utcDate = date.toString().replace(date.toString().split('GMT')[1],"");
+  utcDate = utcDate.split(" ");
+  utcDate[0]=utcDate[0]+",";
+  let temp = utcDate[1];
+  utcDate[1]=utcDate[2];
+  utcDate[2]=temp;
+  utcDate= utcDate.join(" ");
+  
+  res.json({"unix":Date.parse(date), "utc":utcDate});
+  
+  
+  
+}); 
 
 // Listen on port set in environment variable or default to 3000
 var listener = app.listen(process.env.PORT || 3000, function () {
