@@ -47,7 +47,7 @@ app.get("/api/:date?/", function(req, res){
 
   // Otherwise, return the Unix timestamp and the UTC date string
   const response = {
-    unix:parseInt(dateString),
+    unix:date.getTime(),
     utc: date.toUTCString()
   };
   res.json(response);
