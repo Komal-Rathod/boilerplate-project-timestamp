@@ -23,37 +23,83 @@ app.get("/", function (req, res) {
 app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
-app.get("/api/:date?/", function(req, res){
-  const dateString = req.params.date;
-  let date;
+// app.get("/api/:date?/", function(req, res){
+//   const dateString = req.params.date;
+//   let date;
 
-  // If no date is provided, use the current date
-  if (!dateString) {
-    date = new Date();
-  } else {
-    // Check if the date string is a Unix timestamp
-    const unixTimestamp = parseInt(dateString);
-    if (!isNaN(unixTimestamp)) {
-      date = new Date(unixTimestamp);
-    } else {
-      date = new Date(dateString);
-    }
-  }
+//   // If no date is provided, use the current date
+//   if (!dateString) {
+//     date = new Date();
+//   } else {
+//     // Check if the date string is a Unix timestamp
+//     const unixTimestamp = parseInt(dateString);
+//     if (!isNaN(unixTimestamp)) {
+//       date = new Date(unixTimestamp);
+//     } else {
+//       date = new Date(dateString);
+//     }
+//   }
 
-  // If the date is invalid, return an error message
-  if (isNaN(date.getTime())) {
-    return res.json({ error: "Invalid Date" });
-  }
+//   // If the date is invalid, return an error message
+//   if (isNaN(date.getTime())) {
+//     return res.json({ error: "Invalid Date" });
+//   }
 
-  // Otherwise, return the Unix timestamp and the UTC date string
-  const response = {
-    unix:date.getTime(),
-    utc: date.toUTCString()
-  };
-  res.json(response);
+//   // Otherwise, return the Unix timestamp and the UTC date string
+//   const response = {
+//     unix:date.getTime(),
+//     utc: date.toUTCString()
+//   };
+//   res.json(response);
   
-}); 
+// }); 
 
+app.get("/api/:date?", (req,res) => {
+  let input = req.params.date;
+
+  /*1.create variable for checking :  
+      a.isValidDate 
+        to check if input is string with valid date format -> 
+        if not valid date, it will return NaN 
+        example : 
+        -valid   : 2015-12-25, 
+        -invalid : 2015-02-31, 1451001600000
+  */
+  let isValidDate       = Date.parse(input); 
+
+  /*  b.isValidUnixNumber
+        to check if input is string with whole number(no symbol or character in the middle of input) -> 
+        it must be valid unix (source : https://benjaminsemah.com/build-timestamp-microservice)
+  */
+  let isValidUnixNumber = /^[0-9]+$/.test(input)
+
+  //  c.isEmpty to check there is nothing in input
+  let isEmpty = input == "" || input == null;
+  
+  //3.create another variables used in if-else
+  let unix_output = 0;
+  let utc_output  = "";
+  
+  if (isValidDate) {
+    unix_output = new Date(input);
+    utc_output  = unix_output.toUTCString();
+    // valueOf used for getting a variable back to primitive type
+    return res.json({unix : unix_output.valueOf(), utc : utc_output});
+  }
+  else if (isNaN(isValidDate) && isValidUnixNumber) {
+    unix_output = new Date(parseInt(input));
+    utc_output  = unix_output.toUTCString();
+    return res.json({unix : unix_output.valueOf(), utc : utc_output});
+  }
+  else if (isEmpty) {
+    unix_output = new Date();
+    utc_output  = unix_output.toUTCString();
+    return res.json({unix : unix_output.valueOf(), utc : utc_output});  
+  }
+  else {
+    res.json({error: "Invalid Date"});
+  }
+});
 // Listen on port set in environment variable or default to 3000
 var listener = app.listen(process.env.PORT || 3000, function () {
   console.log('Your app is listening on port ' + listener.address().port);
